@@ -63,6 +63,11 @@ def ask(request: AskRequest):
 
     for i in range(len(results["documents"][0])):
 
+        distance = results["distances"][0][i]
+
+        if distance > 1.5:
+            continue
+
         text = results["documents"][0][i]
 
         video_name = results["metadatas"][0][i]["video_name"]

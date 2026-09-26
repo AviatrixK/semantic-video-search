@@ -4,6 +4,7 @@ function App() {
 
   const [query, setQuery] = useState("");
   const [answer, setAnswer] = useState("");
+  const [sources, setSources] = useState([]);
 
   async function handleSearch() {
 
@@ -20,6 +21,7 @@ function App() {
     const data = await response.json();
 
     setAnswer(data.answer);
+    setSources(data.sources);
   }
 
   return (
@@ -43,6 +45,27 @@ function App() {
           <p>{answer}</p>
         </div>
       )}
+
+      {sources.length > 0 && (
+        <div>
+          <h2>Relevant Video Sections</h2>
+
+          {sources.map((source, index) => (
+            <div key={index}>
+
+              <p>
+                <strong>{source.video_name}</strong>
+              </p>
+
+              <p>
+                {source.start} - {source.end} seconds
+              </p>
+
+            </div>
+          ))}
+        </div>
+      )}
+
     </div>
   );
 }
