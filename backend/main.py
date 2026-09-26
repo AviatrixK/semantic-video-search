@@ -3,6 +3,9 @@ from fastapi import FastAPI
 from .search.service import search_video
 from .schemas.search import SearchRequest, SearchResponse
 
+from .rag.service import generate_answer
+from .schemas.ask import AskRequest, AskResponse
+
 app = FastAPI()
 
 
@@ -36,4 +39,47 @@ def search(request: SearchRequest):
     return {
         "query": request.query,
         "results": response
+    }
+
+
+@app.post("/ask", response_model=AskResponse)
+def ask(request: AskRequest):
+
+    results = search_video(
+        request.query,
+        top_k=3
+    )
+
+    context_parts = []
+    sources = []
+
+    for i in range(len(results["documents"][0])):
+
+        text = results["documents"][0][i]
+
+        video_name = results["metadatas"][0][i]["video_name"]
+        start = results["metadatas"][0][i]["start"]
+        end = results["metadatas"][0][i]["end"]
+
+        context_parts.append(
+            f"[{start} - {end} seconds]\n{text}"
+        )
+
+        sources.append({
+            "video_name": video_name,
+            "start": start,
+            "end": end
+        })
+
+    context = "\n\n".join(context_parts)
+
+    answer = generate_answer(
+        request.query,
+        context
+    )
+
+    return {
+        "query": request.query,
+        "answer": answer,
+        "sources": sources
     }
